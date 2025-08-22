@@ -1,5 +1,5 @@
-# Usamos Java 17
-FROM openjdk:17-jdk-slim
+# Imagen base con Java 21
+FROM openjdk:21-jdk-slim
 
 # Argumento con el nombre del JAR (ajústalo según tu build)
 ARG JAR_FILE=target/pokestop-0.0.1-SNAPSHOT.jar

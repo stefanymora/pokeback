@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/products")
-
+@CrossOrigin(origins = {"http://localhost:3000", "https://pokestop-app.vercel.app"})
 public class ProductsREST {
 
     @Autowired

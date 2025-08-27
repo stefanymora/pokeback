@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/cards")
-
+@CrossOrigin(origins = {"http://localhost:3000", "https://pokestop-app.vercel.app"})
 public class CardsREST {
 
     @Autowired

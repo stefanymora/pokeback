@@ -1,13 +1,16 @@
 dev\api\pokestop\enums\Status.class
 dev\api\pokestop\rest\ProductsREST.class
 dev\api\pokestop\DAO\ProductsDAO$1.class
+dev\api\pokestop\config\SecurityConfig.class
 dev\api\pokestop\entity\Employee.class
 dev\api\pokestop\rest\EmployeeREST.class
 dev\api\pokestop\DAO\ProductsDAO.class
 dev\api\pokestop\service\EmployeeServiceImpl.class
+dev\api\pokestop\config\CorsConfig.class
 dev\api\pokestop\DAO\CardsDAO.class
 dev\api\pokestop\enums\PaymentMethods.class
 dev\api\pokestop\enums\Positions.class
+dev\api\pokestop\config\SecurityConfig$1.class
 dev\api\pokestop\service\EmployeeService.class
 dev\api\pokestop\config\Config.class
 dev\api\pokestop\DAO\CardsDAO$2.class

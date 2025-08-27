@@ -10,7 +10,6 @@ dev\api\pokestop\config\CorsConfig.class
 dev\api\pokestop\DAO\CardsDAO.class
 dev\api\pokestop\enums\PaymentMethods.class
 dev\api\pokestop\enums\Positions.class
-dev\api\pokestop\config\SecurityConfig$1.class
 dev\api\pokestop\service\EmployeeService.class
 dev\api\pokestop\config\Config.class
 dev\api\pokestop\DAO\CardsDAO$2.class

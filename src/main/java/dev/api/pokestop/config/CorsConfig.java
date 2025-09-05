@@ -1,4 +1,5 @@
 package dev.api.pokestop.config;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -14,21 +15,24 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // ✅ Permitir origen de tu frontend en Vercel
-        config.setAllowedOrigins(List.of("https://pokestop-app.vercel.app"));
+        // ✅ Permitir origen de tu frontend en Vercel y local
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://pokestop-app.vercel.app"
+        ));
 
-        // ✅ Permitir todos los métodos, incluyendo OPTIONS
+        // ✅ Permitir todos los métodos
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         // ✅ Permitir todos los headers
         config.setAllowedHeaders(List.of("*"));
 
-        // ✅ Permitir credenciales si algún día manejas JWT o cookies
+        // ✅ Permitir credenciales
         config.setAllowCredentials(true);
 
-        // ✅ Configurar y registrar el filtro
+        // ✅ Registrar para TODOS los endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/", config);
+        source.registerCorsConfiguration("/**", config);
 
         return new CorsFilter(source);
     }

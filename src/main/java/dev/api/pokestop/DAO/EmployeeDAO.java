@@ -7,6 +7,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
+import dev.api.pokestop.DTO.EmployeeDTO;
 import dev.api.pokestop.entity.Employee;
 import dev.api.pokestop.enums.Positions;
 import dev.api.pokestop.enums.Status;
@@ -25,17 +26,17 @@ public class EmployeeDAO {
 
     // TRAE TODOS LOS EMPLEADOS
 
-    public List<Employee> getAll() throws InterruptedException, ExecutionException {
+    public List<EmployeeDTO> getAll() throws InterruptedException, ExecutionException {
         Firestore db = FirestoreClient.getFirestore();
         ApiFuture<QuerySnapshot> future = db.collection(COLLECTION_NAME).get();
 
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-        List<Employee> employees = new ArrayList<>();
+        List<EmployeeDTO> employees = new ArrayList<>();
 
         for (QueryDocumentSnapshot document : documents) {
             System.out.println("Raw data: " + document.getData());
 
-            Employee employee = new Employee();
+            EmployeeDTO employee = new EmployeeDTO();
             employee.setId(document.getId());
             employee.setName((String) document.get("name"));
             employee.setPhone((String) document.get("phone"));
@@ -47,7 +48,6 @@ public class EmployeeDAO {
             }
 
             employee.setUsername((String) document.get("username"));
-            employee.setPassword((String) document.get("password"));
             employee.setUrl_photo((String) document.get("url_photo"));
 
             Long timestampMillisStart = document.getLong("start_date");
@@ -80,19 +80,17 @@ public class EmployeeDAO {
 
     }
 
-
-
     // OBTIENE UN EMPLEADO
 
-    public Employee getEmployee(String id) throws InterruptedException, ExecutionException {
+    public EmployeeDTO getEmployee(String id) throws InterruptedException, ExecutionException {
         Firestore db = FirestoreClient.getFirestore();
         DocumentReference docRef = db.collection(COLLECTION_NAME).document(id);
         ApiFuture<DocumentSnapshot> future = docRef.get();
         DocumentSnapshot document = future.get();
 
         if(document.exists()){
-            Employee employee = new Employee();
-            employee = document.toObject(Employee.class);
+            EmployeeDTO employee = new EmployeeDTO();
+            employee = mapDocumentToEmployee(document);
             employee.setId(document.getId());
             return employee;
         } else {
@@ -108,11 +106,21 @@ public class EmployeeDAO {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> employeeData = mapper.convertValue(employee, new TypeReference<Map<String, Object>>() {});
         employeeData.remove("id");
-        DocumentReference docRef = db.collection(COLLECTION_NAME).document(); // ID automático
-        ApiFuture<WriteResult> result = docRef.set(employeeData);
-        return "Empleado número: " + docRef.getId() + " guardado a las " + result.get().getUpdateTime();
+        DocumentReference existingUserRef = db.collection(COLLECTION_NAME).document(employee.getUsername());
+        ApiFuture<DocumentSnapshot> existingFuture = existingUserRef.get();
+        DocumentSnapshot existingDoc = existingFuture.get();
 
+        if (existingDoc.exists()) {
+            throw new Exception("El username '" + employee.getUsername() + "' ya está en uso!");
+        }
+        DocumentReference docRef = db.collection(COLLECTION_NAME).document(employee.getUsername());
+        ApiFuture<WriteResult> result = docRef.set(employeeData);
+
+        return "Empleado con username: " + docRef.getId() + " guardado a las " + result.get().getUpdateTime();
     }
+
+
+
 
     //ACTUALIZA UN EMPLEADO
 
@@ -149,5 +157,104 @@ public class EmployeeDAO {
         }
 
     }
+
+    // ---------------------------------------------------------------------------------------
+
+    // LOGIN
+
+    public boolean login(String username, String password) throws InterruptedException, ExecutionException {
+        Firestore db = FirestoreClient.getFirestore();
+
+        // Consulta por el campo "username"
+        ApiFuture<QuerySnapshot> future = db.collection(COLLECTION_NAME)
+                .whereEqualTo("username", username)
+                .get();
+
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+        if (!documents.isEmpty()) {
+            // Tomamos el primer documento que coincida
+            DocumentSnapshot document = documents.get(0);
+
+            // Obtenemos la contraseña almacenada
+            String storedPassword = document.getString("password");
+
+            // Comparamos con la que nos pasaron
+            if (storedPassword != null && storedPassword.equals(password)) {
+                return true; // login exitoso
+            }
+        }
+
+        return false; // usuario no existe o contraseña incorrecta
+    }
+
+
+    public EmployeeDTO getUserByUsername(String username) throws InterruptedException, ExecutionException {
+        Firestore db = FirestoreClient.getFirestore();
+
+        ApiFuture<QuerySnapshot> future = db.collection(COLLECTION_NAME)
+                .whereEqualTo("username", username)
+                .get();
+
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+        if (!documents.isEmpty()) {
+            DocumentSnapshot document = documents.get(0);
+            return mapDocumentToEmployee(document);
+        } else {
+            return null;
+        }
+    }
+
+
+
+    public EmployeeDTO mapDocumentToEmployee(DocumentSnapshot document) {
+        if (document == null || !document.exists()) {
+            return null;
+        }
+
+        EmployeeDTO employee = new EmployeeDTO();
+        employee.setId(document.getId());
+        employee.setName(document.getString("name"));
+        employee.setPhone(document.getString("phone"));
+        employee.setEmail(document.getString("email"));
+        employee.setUsername(document.getString("username"));
+        employee.setUrl_photo(document.getString("url_photo"));
+        employee.setComments(document.getString("comments"));
+
+        // Manejo de fechas
+        employee.setDate_birthday(convertToDate(document.get("date_birthday")));
+        employee.setStart_date(convertToDate(document.get("start_date")));
+        employee.setEnd_date(convertToDate(document.get("end_date")));
+
+        // Manejo de enums (Positions y Status)
+        String positionStr = document.getString("position");
+        if (positionStr != null) {
+            employee.setPosition(Positions.valueOf(positionStr));
+        }
+
+        String statusStr = document.getString("status");
+        if (statusStr != null) {
+            employee.setStatus(Status.valueOf(statusStr));
+        }
+
+        return employee;
+    }
+
+    // Método auxiliar para convertir a Date
+    private Date convertToDate(Object obj) {
+        if (obj == null) return null;
+
+        if (obj instanceof com.google.cloud.Timestamp) {
+            return ((com.google.cloud.Timestamp) obj).toDate();
+        } else if (obj instanceof Long) {
+            return new Date((Long) obj);
+        } else {
+            return null;
+        }
+    }
+
+
+
 
 }

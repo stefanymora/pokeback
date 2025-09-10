@@ -1,6 +1,7 @@
 package dev.api.pokestop.rest;
 
 
+import dev.api.pokestop.DTO.EmployeeDTO;
 import dev.api.pokestop.entity.Employee;
 import dev.api.pokestop.entity.Product;
 import dev.api.pokestop.service.EmployeeServiceImpl;
@@ -20,15 +21,15 @@ public class EmployeeREST {
 
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAll() {
-        List<Employee> employees = employeeServiceImpl.getAllEmployee();
+    public ResponseEntity<List<EmployeeDTO>> getAll() {
+        List<EmployeeDTO> employees = employeeServiceImpl.getAllEmployee();
         return ResponseEntity.ok(employees);
     }
 
 
     @GetMapping("/{employee}")
-    public ResponseEntity<Employee> getEmployeeByName(@PathVariable String employee) {
-        Employee employee1 = employeeServiceImpl.getEmployee(employee);
+    public ResponseEntity<EmployeeDTO> getEmployeeByName(@PathVariable String employee) {
+        EmployeeDTO employee1 = employeeServiceImpl.getEmployee(employee);
 
         if (employee1 != null) {
             return ResponseEntity.ok(employee1);
@@ -72,5 +73,19 @@ public class EmployeeREST {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
     }
+
+
+    // ---------------------------------------------------------------------------------------
+
+    @PostMapping("/login")
+    public ResponseEntity<EmployeeDTO> login(@RequestBody Employee employeeB) {
+        EmployeeDTO employee =  employeeServiceImpl.login(employeeB.getUsername(), employeeB.getPassword());
+        if (employee != null) {
+            return ResponseEntity.ok(employee);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(employee);
+        }
+    }
+
 
 }

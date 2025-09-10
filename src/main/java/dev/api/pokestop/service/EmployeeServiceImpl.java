@@ -1,6 +1,7 @@
 package dev.api.pokestop.service;
 
 import dev.api.pokestop.DAO.EmployeeDAO;
+import dev.api.pokestop.DTO.EmployeeDTO;
 import dev.api.pokestop.entity.Employee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee getEmployee(String employee) {
+    public EmployeeDTO getEmployee(String employee) {
         try {
             return employeeDAO.getEmployee(employee);
         } catch (Exception e) {
@@ -44,7 +45,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<Employee> getAllEmployee() {
+    public List<EmployeeDTO> getAllEmployee() {
         try {
             return employeeDAO.getAll();
         } catch (Exception e) {
@@ -59,6 +60,22 @@ public class EmployeeServiceImpl implements EmployeeService {
             return employeeDAO.updateEmployee(id, updateEmployee);
         } catch (Exception e) {
             return "Error al actualizar el producto: " + e.getMessage();
+        }
+    }
+
+    @Override
+    public EmployeeDTO login(String username, String password) {
+
+        try{
+           boolean found =  employeeDAO.login(username, password);
+           if (found){
+                EmployeeDTO employee = employeeDAO.getUserByUsername(username);
+               return employee;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 }

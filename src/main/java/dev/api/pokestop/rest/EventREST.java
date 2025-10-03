@@ -47,7 +47,6 @@ public class EventREST {
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
-
     }
 
     @PostMapping
